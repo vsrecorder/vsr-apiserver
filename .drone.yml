@@ -1,0 +1,87 @@
+---
+kind: pipeline
+type: docker
+name: vsr-apiserver
+
+steps:
+- name: docker build for staging
+  image: plugins/docker
+  settings:
+    dry_run: true
+    registry: vsr.sakuracr.jp
+    repo: vsr.sakuracr.jp/vsr/vsr-apiserver 
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    branch:
+    - main
+    event:
+    - pull_request
+
+- name: docker build & push for staging
+  image: plugins/docker
+  settings:
+    registry: vsr.sakuracr.jp
+    repo: vsr.sakuracr.jp/vsr/vsr-apiserver 
+    tag:
+    - staging
+    - ${DRONE_COMMIT:0:8}
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    branch:
+    - main
+    event:
+    - push
+    - custom
+
+- name: docker build & push for production
+  image: plugins/docker
+  settings:
+    registry: vsr.sakuracr.jp
+    repo: vsr.sakuracr.jp/vsr/vsr-apiserver 
+    tag:
+    - v${DRONE_SEMVER}
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    event:
+    - tag
+
+- name: notify to slack
+  image: plugins/slack
+  settings:
+    webhook:
+      from_secret: slack_webhook_url
+    template: |-
+      {{#success build.status}} :white_check_mark: {{ else }} :x: {{/success}} {{ uppercasefirst build.status }}: <{{ build.link }} | Build #{{ build.number }}> - (type: `{{ build.event }}`)
+      :memo: Commit: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commit/{{ build.commit }}|{{ truncate build.commit 8 }}>
+      :github: Repository: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commits/{{ build.branch }}|{{ repo.owner }}/{{ repo.name }}>
+      :git-branch: Branch: {{ build.branch }}
+      :bust_in_silhouette: Author: {{ build.author }}
+  when:
+    status:
+    - success
+    - failure
+    branch:
+    - main
+    event:
+    - push
+    - pull_request
+    - tag
+    - custom
+
+trigger:
+  branch:
+  - main
+  event:
+  - push
+  - pull_request
+  - tag
+  - custom

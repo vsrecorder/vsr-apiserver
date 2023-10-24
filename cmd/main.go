@@ -48,7 +48,6 @@ func main() {
 	}
 
 	{
-
 		db, err := infrastructures.NewMySQL(userName, password, dbHostname, dbPort, dbName)
 		if err != nil {
 			log.Fatalf("failed to connect database: %v", err)
@@ -61,7 +60,21 @@ func main() {
 				repositories.NewOfficialEventRepository(db),
 			),
 		).RegisterRoutes("/api/v1alpha")
+	}
 
+	{
+		db, err := infrastructures.NewMySQL(userName, password, dbHostname, dbPort, dbName)
+		if err != nil {
+			log.Fatalf("failed to connect database: %v", err)
+		}
+
+		controllers.NewGameController(
+			r,
+			services.NewGameService(
+				repositories.NewGameRepository(db),
+				repositories.NewRecordRepository(db),
+			),
+		).RegisterRoutes("/api/v1alpha")
 	}
 
 	if err := r.Run(":8913"); err != nil {

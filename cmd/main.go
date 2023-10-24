@@ -77,6 +77,20 @@ func main() {
 		).RegisterRoutes("/api/v1alpha")
 	}
 
+	{
+		db, err := infrastructures.NewMySQL(userName, password, dbHostname, dbPort, dbName)
+		if err != nil {
+			log.Fatalf("failed to connect database: %v", err)
+		}
+
+		controllers.NewDeckController(
+			r,
+			services.NewDeckService(
+				repositories.NewDeckRepository(db),
+			),
+		).RegisterRoutes("/api/v1alpha")
+	}
+
 	if err := r.Run(":8913"); err != nil {
 		log.Fatalf("failed to run server: %v", err)
 	}

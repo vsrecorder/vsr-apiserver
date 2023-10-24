@@ -30,6 +30,7 @@ COPY --from=builder /workspace/apiserver .
 USER 65532:65532
 EXPOSE 8913
 
+ENV TZ=Asia/Tokyo
 ENV DB_USER_NAME=
 ENV DB_PASSWORD=
 ENV DB_HOSTNAME=

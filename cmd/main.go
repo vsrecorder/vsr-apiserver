@@ -25,11 +25,6 @@ func main() {
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
 
-	db, err := infrastructures.NewMySQL(userName, password, dbHostname, dbPort, dbName)
-	if err != nil {
-		log.Fatalf("failed to connect database: %v", err)
-	}
-
 	r := gin.Default()
 	m := ginmetrics.GetMonitor()
 
@@ -38,12 +33,36 @@ func main() {
 	m.SetDuration([]float64{0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0})
 	m.Use(r)
 
-	controllers.NewOfficialEventController(
-		r,
-		services.NewOfficialEventService(
-			repositories.NewOfficialEventRepository(db),
-		),
-	).RegisterRoutes("/api/v1alpha")
+	{
+		db, err := infrastructures.NewMySQL(userName, password, dbHostname, dbPort, dbName)
+		if err != nil {
+			log.Fatalf("failed to connect database: %v", err)
+		}
+
+		controllers.NewOfficialEventController(
+			r,
+			services.NewOfficialEventService(
+				repositories.NewOfficialEventRepository(db),
+			),
+		).RegisterRoutes("/api/v1alpha")
+	}
+
+	{
+
+		db, err := infrastructures.NewMySQL(userName, password, dbHostname, dbPort, dbName)
+		if err != nil {
+			log.Fatalf("failed to connect database: %v", err)
+		}
+
+		controllers.NewRecordController(
+			r,
+			services.NewRecordService(
+				repositories.NewRecordRepository(db),
+				repositories.NewOfficialEventRepository(db),
+			),
+		).RegisterRoutes("/api/v1alpha")
+
+	}
 
 	if err := r.Run(":8913"); err != nil {
 		log.Fatalf("failed to run server: %v", err)

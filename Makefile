@@ -1,3 +1,7 @@
+.PHONY: test
+test:
+	go test -v -cover -race ./...
+
 .PHONY: build
 build:
 	go build -o bin/apiserver cmd/main.go

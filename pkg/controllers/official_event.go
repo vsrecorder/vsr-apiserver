@@ -1,19 +1,12 @@
 package controllers
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vsrecorder/vsr-apiserver/pkg/controllers/helpers"
 	"github.com/vsrecorder/vsr-apiserver/pkg/services"
-)
-
-var (
-	ErrInvalidParameter      = errors.New("invalid parameter")
-	ErrOfficialEventNotFound = errors.New("official event not found")
 )
 
 type OfficialEventController struct {
@@ -36,26 +29,8 @@ func (c *OfficialEventController) RegisterRoutes(relativePath string) {
 
 func (c *OfficialEventController) Get(ctx *gin.Context) {
 	if helpers.GetStartDate(ctx) != "" || helpers.GetEndDate(ctx) != "" {
-		var layout = "2006-01-02"
-
-		startDate, err := time.Parse(layout, helpers.GetStartDate(ctx))
+		startDate, endDate, err := ParseDate(ctx)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"message": ErrInvalidParameter.Error(),
-			})
-			return
-		}
-
-		endDate, err := time.Parse(layout, helpers.GetEndDate(ctx))
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"message": ErrInvalidParameter.Error(),
-			})
-			return
-		}
-
-		// startDate > endDate
-		if !startDate.Before(endDate) && !startDate.Equal(endDate) {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"message": ErrInvalidParameter.Error(),
 			})
@@ -71,50 +46,28 @@ func (c *OfficialEventController) Get(ctx *gin.Context) {
 		}
 
 		ctx.JSON(http.StatusOK, ret)
+		return
 	} else {
-		if helpers.GetPage(ctx) == "" {
-			page := 1
-			limit := 20
-			offset := limit * (page - 1)
-			ret, err := c.service.Find(ctx, limit, offset)
-			if err != nil {
-				ctx.JSON(http.StatusNotFound, gin.H{
-					"message": ErrOfficialEventNotFound.Error(),
-				})
-				return
-			}
-
-			ctx.JSON(http.StatusOK, ret)
-		} else {
-			// 取得したパラメータが数値か否か
-			page, err := strconv.Atoi(helpers.GetPage(ctx))
-			if err != nil {
-				ctx.JSON(http.StatusBadRequest, gin.H{
-					"message": ErrInvalidParameter.Error(),
-				})
-				return
-			}
-
-			// 取得したパラメータが負の数値ではないか
-			if page <= 0 {
-				ctx.JSON(http.StatusBadRequest, gin.H{
-					"message": ErrInvalidParameter.Error(),
-				})
-				return
-			}
-
-			limit := 20
-			offset := limit * (page - 1)
-			ret, err := c.service.Find(ctx, limit, offset)
-			if err != nil {
-				ctx.JSON(http.StatusNotFound, gin.H{
-					"message": ErrOfficialEventNotFound.Error(),
-				})
-				return
-			}
-
-			ctx.JSON(http.StatusOK, ret)
+		page, err := ParsePage(ctx)
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"message": err.Error(),
+			})
+			return
 		}
+
+		offset := PAGE_LIMIT * (page - 1)
+
+		ret, err := c.service.Find(ctx, PAGE_LIMIT, offset)
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"message": ErrOfficialEventNotFound.Error(),
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, ret)
+		return
 	}
 }
 

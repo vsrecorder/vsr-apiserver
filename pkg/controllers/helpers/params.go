@@ -1,7 +1,9 @@
 package helpers
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
-func GetId(ctx *gin.Context) string {
+func GetId(ctx *gin.Context) (id string) {
 	return ctx.Param("id")
 }

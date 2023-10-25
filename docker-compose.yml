@@ -8,8 +8,8 @@ services:
       - 8913:8913
     volumes:
       - type: bind
-        source: ./configs${FIREBASE_CREDENTIALS_FILE_PATH} 
-        target: ${FIREBASE_CREDENTIALS_FILE_PATH} 
+        source: ./configs/vsrecorder-mobi-firebase-adminsdk-credentials.json
+        target: /vsrecorder-mobi-firebase-adminsdk-credentials.json
     environment:
       - DB_USER_NAME=${DB_USER_NAME}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -18,4 +18,4 @@ services:
       - DB_NAME=${DB_NAME}
       - VSRECORDER_JWT_SECRET=${VSRECORDER_JWT_SECRET}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
-      - FIREBASE_CREDENTIALS_FILE_PATH=${FIREBASE_CREDENTIALS_FILE_PATH}
+      - FIREBASE_CREDENTIALS_FILE_PATH=/vsrecorder-mobi-firebase-adminsdk-credentials.json

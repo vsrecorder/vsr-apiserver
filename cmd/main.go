@@ -29,7 +29,7 @@ func main() {
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
 	firebaseProjectId := os.Getenv("FIREBASE_PROJECT_ID")
-	firebaseCredentialsFilePath := os.Getenv("FIREBASE_CREDENTIAL_FILE_PATH")
+	firebaseCredentialsFilePath := os.Getenv("FIREBASE_CREDENTIALS_FILE_PATH")
 
 	r := gin.Default()
 	m := ginmetrics.GetMonitor()

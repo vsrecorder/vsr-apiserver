@@ -44,6 +44,7 @@ func (c *RecordController) RegisterRoutes(relativePath string) {
 	{
 		r := c.router.Group(relativePath + RECORDS_PATH)
 		r.GET("/:id", c.GetById)
+		r.GET("/:id"+GAMES_PATH, c.GetGameById)
 	}
 }
 
@@ -105,6 +106,20 @@ func (c *RecordController) GetById(ctx *gin.Context) {
 
 	ret, err := c.service.FindById(ctx, id)
 
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ret)
+}
+
+func (c *RecordController) GetGameById(ctx *gin.Context) {
+	id := helpers.GetId(ctx)
+
+	ret, err := c.service.FindGameById(ctx, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),

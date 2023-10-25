@@ -13,6 +13,11 @@ type GameRepositoryInterface interface {
 		id string,
 	) (*daos.Game, error)
 
+	FindAllByUID(
+		ctx context.Context,
+		uid string,
+	) ([]*daos.Game, error)
+
 	FindByRecordId(
 		ctx context.Context,
 		recordId string,
@@ -51,6 +56,19 @@ func (r *GameRepository) FindById(
 	}
 
 	return game, nil
+}
+
+func (r *GameRepository) FindAllByUID(
+	ctx context.Context,
+	uid string,
+) ([]*daos.Game, error) {
+	var games []*daos.Game
+
+	if tx := r.db.Where(&daos.Game{UserId: uid}).Find(&games); tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return games, nil
 }
 
 func (r *GameRepository) FindByRecordId(

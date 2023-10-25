@@ -28,6 +28,11 @@ type RecordRepositoryInterface interface {
 		offset int,
 	) ([]*daos.Record, error)
 
+	FindByOfficialEventId(
+		ctx context.Context,
+		officialEventId uint,
+	) ([]*daos.Record, error)
+
 	Save(
 		ctx context.Context,
 		record *daos.Record,
@@ -95,6 +100,19 @@ func (r *RecordRepository) FindByUID(
 	var records []*daos.Record
 
 	if tx := r.db.Where(&daos.Record{UserId: uid}).Limit(limit).Offset(offset).Find(&records); tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return records, nil
+}
+
+func (r *RecordRepository) FindByOfficialEventId(
+	ctx context.Context,
+	officialEventId uint,
+) ([]*daos.Record, error) {
+	var records []*daos.Record
+
+	if tx := r.db.Where(&daos.Record{OfficialEventId: officialEventId}).Find(&records); tx.Error != nil {
 		return nil, tx.Error
 	}
 

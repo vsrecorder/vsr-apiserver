@@ -43,6 +43,7 @@ func main() {
 			r,
 			services.NewOfficialEventService(
 				repositories.NewOfficialEventRepository(db),
+				repositories.NewRecordRepository(db),
 			),
 		).RegisterRoutes("/api/v1alpha")
 	}

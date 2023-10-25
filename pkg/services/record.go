@@ -29,6 +29,11 @@ type RecordServiceInterface interface {
 		offset int,
 	) ([]*models.Record, error)
 
+	FindGameById(
+		ctx context.Context,
+		id string,
+	) ([]*models.Game, error)
+
 	Create(
 		ctx context.Context,
 		uid string,
@@ -51,14 +56,20 @@ type RecordServiceInterface interface {
 
 type RecordService struct {
 	recordRepository        repositories.RecordRepositoryInterface
+	gameRepository          repositories.GameRepositoryInterface
 	officialEventRepository repositories.OfficialEventRepositoryInterface
 }
 
 func NewRecordService(
 	recordRepository repositories.RecordRepositoryInterface,
+	gameRepository repositories.GameRepositoryInterface,
 	officialEventRepository repositories.OfficialEventRepositoryInterface,
 ) RecordServiceInterface {
-	return &RecordService{recordRepository, officialEventRepository}
+	return &RecordService{
+		recordRepository,
+		gameRepository,
+		officialEventRepository,
+	}
 }
 
 func createRecordModel(dao *daos.Record) *models.Record {
@@ -128,6 +139,29 @@ func (s *RecordService) FindByUID(
 	}
 
 	return records, nil
+}
+
+func (s *RecordService) FindGameById(
+	ctx context.Context,
+	id string,
+) ([]*models.Game, error) {
+	// 指定されたIdのRecordが存在するか確認
+	if _, err := s.FindById(ctx, id); err != nil {
+		return nil, err
+	}
+
+	daos, err := s.gameRepository.FindByRecordId(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	games := []*models.Game{}
+	for _, dao := range daos {
+		games = append(games, createGameModel(dao))
+	}
+
+	return games, nil
+
 }
 
 func (s *RecordService) Create(

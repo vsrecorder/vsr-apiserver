@@ -6,6 +6,7 @@ import (
 
 	"github.com/vsrecorder/import-officialevent-bat/model"
 	"github.com/vsrecorder/vsr-apiserver/pkg/repositories"
+	"github.com/vsrecorder/vsr-apiserver/pkg/services/models"
 )
 
 type OfficialEventServiceInterface interface {
@@ -25,16 +26,26 @@ type OfficialEventServiceInterface interface {
 		startDate time.Time,
 		endDate time.Time,
 	) ([]*model.OfficialEvent, error)
+
+	FindRecordById(
+		ctx context.Context,
+		id uint,
+	) ([]*models.Record, error)
 }
 
 type OfficialEventService struct {
-	repository repositories.OfficialEventRepositoryInterface
+	officialEventRepository repositories.OfficialEventRepositoryInterface
+	recordRepository        repositories.RecordRepositoryInterface
 }
 
 func NewOfficialEventService(
-	repository repositories.OfficialEventRepositoryInterface,
+	officialEventRepository repositories.OfficialEventRepositoryInterface,
+	recordRepository repositories.RecordRepositoryInterface,
 ) OfficialEventServiceInterface {
-	return &OfficialEventService{repository}
+	return &OfficialEventService{
+		officialEventRepository,
+		recordRepository,
+	}
 }
 
 func (s *OfficialEventService) Find(
@@ -42,7 +53,7 @@ func (s *OfficialEventService) Find(
 	limit int,
 	offset int,
 ) ([]*model.OfficialEvent, error) {
-	ret, err := s.repository.Find(ctx, limit, offset)
+	ret, err := s.officialEventRepository.Find(ctx, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +66,7 @@ func (s *OfficialEventService) FindById(
 	ctx context.Context,
 	id uint,
 ) (*model.OfficialEvent, error) {
-	ret, err := s.repository.FindById(ctx, id)
+	ret, err := s.officialEventRepository.FindById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -68,10 +79,32 @@ func (s *OfficialEventService) FindByDate(
 	startDate time.Time,
 	endDate time.Time,
 ) ([]*model.OfficialEvent, error) {
-	ret, err := s.repository.FindByDate(ctx, startDate, endDate)
+	ret, err := s.officialEventRepository.FindByDate(ctx, startDate, endDate)
 	if err != nil {
 		return nil, err
 	}
 
 	return ret, nil
+}
+
+func (s *OfficialEventService) FindRecordById(
+	ctx context.Context,
+	id uint,
+) ([]*models.Record, error) {
+	// 指定されたidのOfficialEventが存在するか確認
+	if _, err := s.FindById(ctx, id); err != nil {
+		return nil, err
+	}
+
+	daos, err := s.recordRepository.FindByOfficialEventId(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	records := []*models.Record{}
+	for _, dao := range daos {
+		records = append(records, createRecordModel(dao))
+	}
+
+	return records, nil
 }

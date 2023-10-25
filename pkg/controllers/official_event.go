@@ -25,6 +25,7 @@ func (c *OfficialEventController) RegisterRoutes(relativePath string) {
 	r := c.router.Group(relativePath + "/official_events")
 	r.GET("", c.Get)
 	r.GET("/:id", c.GetById)
+	r.GET("/:id"+RECORDS_PATH, c.GetRecordById)
 }
 
 func (c *OfficialEventController) Get(ctx *gin.Context) {
@@ -93,6 +94,37 @@ func (c *OfficialEventController) GetById(ctx *gin.Context) {
 
 	id := uint(tmpId)
 	ret, err := c.service.FindById(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"message": ErrOfficialEventNotFound.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ret)
+}
+
+func (c *OfficialEventController) GetRecordById(ctx *gin.Context) {
+	// 取得したパラメータが数値か否か
+	tmpId, err := strconv.Atoi(helpers.GetId(ctx))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": ErrInvalidParameter.Error(),
+		})
+		return
+	}
+
+	// 取得したパラメータが負の数値ではないか
+	if tmpId <= 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": ErrInvalidParameter.Error(),
+		})
+		return
+
+	}
+
+	id := uint(tmpId)
+	ret, err := c.service.FindRecordById(ctx, id)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"message": ErrOfficialEventNotFound.Error(),

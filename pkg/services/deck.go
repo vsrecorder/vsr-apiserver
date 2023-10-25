@@ -24,6 +24,11 @@ type DeckServiceInterface interface {
 		offset int,
 	) ([]*models.Deck, error)
 
+	FindRecordById(
+		ctx context.Context,
+		id string,
+	) ([]*models.Record, error)
+
 	Create(
 		ctx context.Context,
 		uid string,
@@ -45,13 +50,18 @@ type DeckServiceInterface interface {
 }
 
 type DeckService struct {
-	deckRepository repositories.DeckRepositoryInterface
+	deckRepository   repositories.DeckRepositoryInterface
+	recordRepository repositories.RecordRepositoryInterface
 }
 
 func NewDeckService(
 	deckRepository repositories.DeckRepositoryInterface,
+	recordRepository repositories.RecordRepositoryInterface,
 ) DeckServiceInterface {
-	return &DeckService{deckRepository}
+	return &DeckService{
+		deckRepository,
+		recordRepository,
+	}
 }
 
 func createDeckModel(dao *daos.Deck) *models.Deck {
@@ -107,6 +117,28 @@ func (s *DeckService) FindByUID(
 	}
 
 	return decks, nil
+}
+
+func (s *DeckService) FindRecordById(
+	ctx context.Context,
+	id string,
+) ([]*models.Record, error) {
+	// 指定されたIdのDeckが存在するか確認
+	if _, err := s.deckRepository.FindById(ctx, id); err != nil {
+		return nil, err
+	}
+
+	daos, err := s.recordRepository.FindByDeckId(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	records := []*models.Record{}
+	for _, dao := range daos {
+		records = append(records, createRecordModel(dao))
+	}
+
+	return records, nil
 }
 
 func (s *DeckService) Create(

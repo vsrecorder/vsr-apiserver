@@ -33,6 +33,11 @@ type RecordRepositoryInterface interface {
 		officialEventId uint,
 	) ([]*daos.Record, error)
 
+	FindByDeckId(
+		ctx context.Context,
+		deckId string,
+	) ([]*daos.Record, error)
+
 	Save(
 		ctx context.Context,
 		record *daos.Record,
@@ -113,6 +118,19 @@ func (r *RecordRepository) FindByOfficialEventId(
 	var records []*daos.Record
 
 	if tx := r.db.Where(&daos.Record{OfficialEventId: officialEventId}).Find(&records); tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return records, nil
+}
+
+func (r *RecordRepository) FindByDeckId(
+	ctx context.Context,
+	deckId string,
+) ([]*daos.Record, error) {
+	var records []*daos.Record
+
+	if tx := r.db.Where(&daos.Record{DeckId: deckId}).Find(&records); tx.Error != nil {
 		return nil, tx.Error
 	}
 

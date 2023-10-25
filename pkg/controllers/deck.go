@@ -41,6 +41,11 @@ func (c *DeckController) RegisterRoutes(relativePath string) {
 		r.Use(middlewares.OptionalAuthorization)
 		r.GET("/:id", c.GetById)
 	}
+
+	{
+		r := c.router.Group(relativePath + DECKS_PATH)
+		r.GET("/:id"+RECORDS_PATH, c.GetRecordById)
+	}
 }
 
 func (c *DeckController) Get(ctx *gin.Context) {
@@ -80,6 +85,20 @@ func (c *DeckController) GetById(ctx *gin.Context) {
 
 	ret, err := c.service.FindByIdWithUID(ctx, id, uid)
 
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ret)
+}
+
+func (c *DeckController) GetRecordById(ctx *gin.Context) {
+	id := helpers.GetId(ctx)
+
+	ret, err := c.service.FindRecordById(ctx, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),

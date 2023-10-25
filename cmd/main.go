@@ -89,6 +89,7 @@ func main() {
 			r,
 			services.NewDeckService(
 				repositories.NewDeckRepository(db),
+				repositories.NewRecordRepository(db),
 			),
 		).RegisterRoutes("/api/v1alpha")
 	}

@@ -28,6 +28,11 @@ type RecordRepositoryInterface interface {
 		offset int,
 	) ([]*daos.Record, error)
 
+	FindAllByUID(
+		ctx context.Context,
+		uid string,
+	) ([]*daos.Record, error)
+
 	FindByOfficialEventId(
 		ctx context.Context,
 		officialEventId uint,
@@ -105,6 +110,19 @@ func (r *RecordRepository) FindByUID(
 	var records []*daos.Record
 
 	if tx := r.db.Where(&daos.Record{UserId: uid}).Limit(limit).Offset(offset).Find(&records); tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return records, nil
+}
+
+func (r *RecordRepository) FindAllByUID(
+	ctx context.Context,
+	uid string,
+) ([]*daos.Record, error) {
+	var records []*daos.Record
+
+	if tx := r.db.Where(&daos.Record{UserId: uid}).Find(&records); tx.Error != nil {
 		return nil, tx.Error
 	}
 

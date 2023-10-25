@@ -20,6 +20,11 @@ type DeckRepositoryInterface interface {
 		offset int,
 	) ([]*daos.Deck, error)
 
+	FindAllByUID(
+		ctx context.Context,
+		uid string,
+	) ([]*daos.Deck, error)
+
 	Save(
 		ctx context.Context,
 		dao *daos.Deck,
@@ -64,6 +69,19 @@ func (r *DeckRepository) FindByUID(
 	var decks []*daos.Deck
 
 	if tx := r.db.Where(&daos.Deck{UserId: uid}).Limit(limit).Offset(offset).Find(&decks); tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return decks, nil
+}
+
+func (r *DeckRepository) FindAllByUID(
+	ctx context.Context,
+	uid string,
+) ([]*daos.Deck, error) {
+	var decks []*daos.Deck
+
+	if tx := r.db.Where(&daos.Deck{UserId: uid}).Find(&decks); tx.Error != nil {
 		return nil, tx.Error
 	}
 

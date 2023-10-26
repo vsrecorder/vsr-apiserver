@@ -44,6 +44,14 @@ func ParseDate(ctx *gin.Context) (time.Time, time.Time, error) {
 		return time.Time{}, time.Time{}, err
 	}
 
+	jst, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+
+	startDate = time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, jst)
+	endDate = time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 59, jst)
+
 	// startDate > endDate
 	if !startDate.Before(endDate) && !startDate.Equal(endDate) {
 		return time.Time{}, time.Time{}, err

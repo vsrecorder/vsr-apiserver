@@ -111,6 +111,7 @@ func main() {
 			services.NewGameService(
 				repositories.NewGameRepository(db),
 				repositories.NewRecordRepository(db),
+				repositories.NewBattleRepository(db),
 			),
 		).RegisterRoutes("/api/v1alpha")
 	}
@@ -126,6 +127,20 @@ func main() {
 			services.NewDeckService(
 				repositories.NewDeckRepository(db),
 				repositories.NewRecordRepository(db),
+			),
+		).RegisterRoutes("/api/v1alpha")
+	}
+
+	{
+		db, err := infrastructures.NewMySQL(userName, password, dbHostname, dbPort, dbName)
+		if err != nil {
+			log.Fatalf("failed to connect database: %v", err)
+		}
+
+		controllers.NewBattleController(
+			r,
+			services.NewBattleService(
+				repositories.NewBattleRepository(db),
 			),
 		).RegisterRoutes("/api/v1alpha")
 	}

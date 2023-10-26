@@ -16,6 +16,11 @@ type GameServiceInterface interface {
 		id string,
 	) (*models.Game, error)
 
+	FindBattleById(
+		ctx context.Context,
+		id string,
+	) ([]*models.Battle, error)
+
 	Create(
 		ctx context.Context,
 		uid string,
@@ -39,13 +44,19 @@ type GameServiceInterface interface {
 type GameService struct {
 	gameRepository   repositories.GameRepositoryInterface
 	recordRepository repositories.RecordRepositoryInterface
+	battleRepository repositories.BattleRepositoryInterface
 }
 
 func NewGameService(
 	gameRepository repositories.GameRepositoryInterface,
 	recordRepository repositories.RecordRepositoryInterface,
+	battleRepository repositories.BattleRepositoryInterface,
 ) GameServiceInterface {
-	return &GameService{gameRepository, recordRepository}
+	return &GameService{
+		gameRepository,
+		recordRepository,
+		battleRepository,
+	}
 }
 
 func createGameModel(dao *daos.Game) *models.Game {
@@ -80,6 +91,29 @@ func (s *GameService) FindById(
 	model := createGameModel(dao)
 
 	return model, nil
+}
+
+func (s *GameService) FindBattleById(
+	ctx context.Context,
+	id string,
+) ([]*models.Battle, error) {
+	// 指定されたIdのGameが存在するか確認
+	if _, err := s.FindById(ctx, id); err != nil {
+		return nil, err
+	}
+
+	daos, err := s.battleRepository.FindByGameId(ctx, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	battles := []*models.Battle{}
+	for _, dao := range daos {
+		battles = append(battles, createBattleModel(dao))
+	}
+
+	return battles, nil
 }
 
 func (s *GameService) Create(

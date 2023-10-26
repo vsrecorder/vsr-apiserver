@@ -11,24 +11,24 @@ import (
 )
 
 const (
-	GAMES_PATH = "/games"
+	BATTLES_PATH = "/battles"
 )
 
-type GameController struct {
+type BattleController struct {
 	router  *gin.Engine
-	service services.GameServiceInterface
+	service services.BattleServiceInterface
 }
 
-func NewGameController(
+func NewBattleController(
 	router *gin.Engine,
-	service services.GameServiceInterface,
-) *GameController {
-	return &GameController{router, service}
+	service services.BattleServiceInterface,
+) *BattleController {
+	return &BattleController{router, service}
 }
 
-func (c *GameController) RegisterRoutes(relativePath string) {
+func (c *BattleController) RegisterRoutes(relativePath string) {
 	{
-		r := c.router.Group(relativePath + GAMES_PATH)
+		r := c.router.Group(relativePath + BATTLES_PATH)
 		r.Use(middlewares.RequiredAuthorization)
 		r.POST("", c.Create)
 		r.PUT("/:id", c.Update)
@@ -36,19 +36,18 @@ func (c *GameController) RegisterRoutes(relativePath string) {
 	}
 
 	{
-		r := c.router.Group(relativePath + GAMES_PATH)
+		r := c.router.Group(relativePath + BATTLES_PATH)
 		r.GET("/:id", c.GetById)
-		r.GET("/:id"+BATTLES_PATH, c.GetBattleById)
 	}
 }
 
-func (c *GameController) GetById(ctx *gin.Context) {
+func (c *BattleController) GetById(ctx *gin.Context) {
 	id := helpers.GetId(ctx)
 
 	ret, err := c.service.FindById(ctx, id)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
 		})
 		return
@@ -57,23 +56,9 @@ func (c *GameController) GetById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func (c *GameController) GetBattleById(ctx *gin.Context) {
-	id := helpers.GetId(ctx)
-
-	ret, err := c.service.FindBattleById(ctx, id)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, ret)
-}
-
-func (c *GameController) Create(ctx *gin.Context) {
+func (c *BattleController) Create(ctx *gin.Context) {
 	uid, _ := helpers.GetUID(ctx)
-	dto := dtos.Game{}
+	dto := dtos.Battle{}
 	if err := ctx.ShouldBindJSON(&dto); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": err.Error(),
@@ -92,10 +77,10 @@ func (c *GameController) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func (c *GameController) Update(ctx *gin.Context) {
+func (c *BattleController) Update(ctx *gin.Context) {
 	id := helpers.GetId(ctx)
 	uid, _ := helpers.GetUID(ctx)
-	dto := dtos.Game{}
+	dto := dtos.Battle{}
 	if err := ctx.ShouldBindJSON(&dto); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": err.Error(),
@@ -114,7 +99,7 @@ func (c *GameController) Update(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, ret)
 }
 
-func (c *GameController) Delete(ctx *gin.Context) {
+func (c *BattleController) Delete(ctx *gin.Context) {
 	id := helpers.GetId(ctx)
 	uid, _ := helpers.GetUID(ctx)
 

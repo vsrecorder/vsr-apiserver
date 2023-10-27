@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/vsrecorder/import-officialevent-bat/model"
+	oem "github.com/vsrecorder/import-officialevent-bat/pkg/models"
 )
 
 type OfficialEventRepositoryInterface interface {
@@ -14,18 +14,18 @@ type OfficialEventRepositoryInterface interface {
 		ctx context.Context,
 		limit int,
 		offset int,
-	) ([]*model.OfficialEvent, error)
+	) ([]*oem.OfficialEvent, error)
 
 	FindById(
 		ctx context.Context,
 		id uint,
-	) (*model.OfficialEvent, error)
+	) (*oem.OfficialEvent, error)
 
 	FindByDate(
 		ctx context.Context,
 		startDate time.Time,
 		endDate time.Time,
-	) ([]*model.OfficialEvent, error)
+	) ([]*oem.OfficialEvent, error)
 }
 
 type OfficialEventRepository struct {
@@ -42,8 +42,8 @@ func (r *OfficialEventRepository) Find(
 	ctx context.Context,
 	limit int,
 	offset int,
-) ([]*model.OfficialEvent, error) {
-	var officialEvents []*model.OfficialEvent
+) ([]*oem.OfficialEvent, error) {
+	var officialEvents []*oem.OfficialEvent
 
 	if tx := r.db.Limit(limit).Offset(offset).Find(&officialEvents); tx.Error != nil {
 		return nil, tx.Error
@@ -55,10 +55,10 @@ func (r *OfficialEventRepository) Find(
 func (r *OfficialEventRepository) FindById(
 	ctx context.Context,
 	id uint,
-) (*model.OfficialEvent, error) {
-	var officialEvent model.OfficialEvent
+) (*oem.OfficialEvent, error) {
+	var officialEvent oem.OfficialEvent
 
-	if tx := r.db.Where(&model.OfficialEvent{Id: id}).First(&officialEvent); tx.Error != nil {
+	if tx := r.db.Where(&oem.OfficialEvent{Id: id}).First(&officialEvent); tx.Error != nil {
 		return nil, tx.Error
 	}
 
@@ -69,8 +69,8 @@ func (r *OfficialEventRepository) FindByDate(
 	ctx context.Context,
 	startDate time.Time,
 	endDate time.Time,
-) ([]*model.OfficialEvent, error) {
-	var officialEvents []*model.OfficialEvent
+) ([]*oem.OfficialEvent, error) {
+	var officialEvents []*oem.OfficialEvent
 
 	if tx := r.db.Where("date BETWEEN ? AND ?", startDate, endDate).Find(&officialEvents); tx.Error != nil {
 		return nil, tx.Error

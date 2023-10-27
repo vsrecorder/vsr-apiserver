@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/vsrecorder/import-officialevent-bat/model"
+	oem "github.com/vsrecorder/import-officialevent-bat/pkg/models"
 	"github.com/vsrecorder/vsr-apiserver/pkg/repositories"
 	"github.com/vsrecorder/vsr-apiserver/pkg/services/models"
 )
@@ -14,18 +14,18 @@ type OfficialEventServiceInterface interface {
 		ctx context.Context,
 		limit int,
 		offset int,
-	) ([]*model.OfficialEvent, error)
+	) ([]*oem.OfficialEvent, error)
 
 	FindById(
 		ctx context.Context,
 		id uint,
-	) (*model.OfficialEvent, error)
+	) (*oem.OfficialEvent, error)
 
 	FindByDate(
 		ctx context.Context,
 		startDate time.Time,
 		endDate time.Time,
-	) ([]*model.OfficialEvent, error)
+	) ([]*oem.OfficialEvent, error)
 
 	FindRecordById(
 		ctx context.Context,
@@ -52,7 +52,7 @@ func (s *OfficialEventService) Find(
 	ctx context.Context,
 	limit int,
 	offset int,
-) ([]*model.OfficialEvent, error) {
+) ([]*oem.OfficialEvent, error) {
 	ret, err := s.officialEventRepository.Find(ctx, limit, offset)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (s *OfficialEventService) Find(
 func (s *OfficialEventService) FindById(
 	ctx context.Context,
 	id uint,
-) (*model.OfficialEvent, error) {
+) (*oem.OfficialEvent, error) {
 	ret, err := s.officialEventRepository.FindById(ctx, id)
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (s *OfficialEventService) FindByDate(
 	ctx context.Context,
 	startDate time.Time,
 	endDate time.Time,
-) ([]*model.OfficialEvent, error) {
+) ([]*oem.OfficialEvent, error) {
 	ret, err := s.officialEventRepository.FindByDate(ctx, startDate, endDate)
 	if err != nil {
 		return nil, err

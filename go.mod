@@ -12,7 +12,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/penglongli/gin-metrics v0.1.10
 	github.com/stretchr/testify v1.8.3
-	github.com/vsrecorder/import-officialevent-bat v0.2.0
+	github.com/vsrecorder/import-officialevent-bat v0.2.1
 	google.golang.org/api v0.114.0
 	gorm.io/driver/mysql v1.5.2
 	gorm.io/gorm v1.25.5

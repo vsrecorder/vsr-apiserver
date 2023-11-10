@@ -4,10 +4,12 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	firebase "firebase.google.com/go/v4"
 	"google.golang.org/api/option"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/penglongli/gin-metrics/ginmetrics"
@@ -38,6 +40,26 @@ func main() {
 	m.SetSlowTime(10)
 	m.SetDuration([]float64{0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0})
 	m.Use(r)
+
+	r.Use(cors.New(cors.Config{
+		AllowMethods: []string{
+			"GET",
+			"POST",
+			"PUT",
+			"DELETE",
+		},
+		AllowHeaders: []string{
+			"Authorization",
+			"Content-Type",
+			"Content-Length",
+			"Access-Control-Allow-Origin",
+		},
+		AllowOrigins: []string{
+			"http://localhost:3000",
+			"https://local.vsrecorder.mobi",
+		},
+		MaxAge: 24 * time.Hour,
+	}))
 
 	{
 		opt := option.WithCredentialsFile(firebaseCredentialsFilePath)

@@ -24,6 +24,11 @@ type DeckServiceInterface interface {
 		offset int,
 	) ([]*models.Deck, error)
 
+	FindAllByUID(
+		ctx context.Context,
+		uid string,
+	) ([]*models.Deck, error)
+
 	FindRecordById(
 		ctx context.Context,
 		id string,
@@ -105,6 +110,25 @@ func (s *DeckService) FindByUID(
 	offset int,
 ) ([]*models.Deck, error) {
 	daos, err := s.deckRepository.FindByUID(ctx, uid, limit, offset)
+
+	if err != nil {
+		return nil, err
+	}
+
+	decks := []*models.Deck{}
+	for _, dao := range daos {
+		deck := createDeckModel(dao)
+		decks = append(decks, deck)
+	}
+
+	return decks, nil
+}
+
+func (s *DeckService) FindAllByUID(
+	ctx context.Context,
+	uid string,
+) ([]*models.Deck, error) {
+	daos, err := s.deckRepository.FindAllByUID(ctx, uid)
 
 	if err != nil {
 		return nil, err

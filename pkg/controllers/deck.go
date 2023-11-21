@@ -59,23 +59,36 @@ func (c *DeckController) Get(ctx *gin.Context) {
 		return
 	}
 
-	offset := PAGE_LIMIT * (page - 1)
+	if page == 0 {
+		ret, err := c.service.FindAllByUID(ctx, uid)
 
-	ret, err := c.service.FindByUID(ctx, uid, PAGE_LIMIT, offset)
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"message": RecordNotFound.Error(),
+			})
+			return
+		}
 
-	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"message": RecordNotFound.Error(),
+		ctx.JSON(http.StatusOK, ret)
+	} else {
+		offset := PAGE_LIMIT * (page - 1)
+
+		ret, err := c.service.FindByUID(ctx, uid, PAGE_LIMIT, offset)
+
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"message": RecordNotFound.Error(),
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"page":   page,
+			"limit":  PAGE_LIMIT,
+			"offset": offset,
+			"decks":  ret,
 		})
-		return
 	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"page":   page,
-		"limit":  PAGE_LIMIT,
-		"offset": offset,
-		"decks":  ret,
-	})
 
 }
 

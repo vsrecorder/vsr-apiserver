@@ -17,14 +17,14 @@ func ParsePage(ctx *gin.Context) (int, error) {
 	pageNumber := helpers.GetPage(ctx)
 
 	if pageNumber == "" {
-		page := 1
+		page := 0
 
 		return page, nil
 	} else {
 		page, err := strconv.Atoi(pageNumber)
 
 		if err != nil { // 取得したパラメータが数値か否か
-			return 0, err
+			return -1, err
 		} else if page <= 0 {
 			return 1, nil
 		}

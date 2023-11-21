@@ -67,7 +67,14 @@ func (c *OfficialEventController) Get(ctx *gin.Context) {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, ret)
+		//ctx.JSON(http.StatusOK, ret)
+		ctx.JSON(http.StatusOK, gin.H{
+			"page":            page,
+			"limit":           PAGE_LIMIT,
+			"offset":          offset,
+			"official_events": ret,
+		})
+
 		return
 	}
 }

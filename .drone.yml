@@ -19,6 +19,7 @@ steps:
     - main
     event:
     - pull_request
+    - custom
 
 - name: docker build & push for staging
   image: plugins/docker
